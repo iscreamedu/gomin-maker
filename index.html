@@ -168,6 +168,7 @@
 <header class="top">
   <h1>홈런 고민상담소 제작 도구</h1>
   <label class="pptbtn"><svg class="lucide lucide-file-up" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M12 12v6" /><path d="m15 15-3-3-3 3" /></svg>PPT 기획서 불러오기<input type="file" id="pptFile" accept=".pptx" hidden></label>
+  <label class="pptbtn"><svg class="lucide lucide-file-up" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M12 12v6" /><path d="m15 15-3-3-3 3" /></svg>작업파일(json) 불러오기<input type="file" id="jsonFile" accept=".json,application/json" hidden></label>
   <div class="sp"></div>
   <span class="zipwrap"><button class="btn primary" id="btnZip"><svg class="lucide lucide-folder-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /><path d="M12 10v6" /><path d="m15 13-3 3-3-3" /></svg>이미지 내보내기 (zip)</button><div class="ziptip" id="zipTip"></div></span>
 </header>
@@ -10879,6 +10880,23 @@ async function importPptx(file){
 $('#pptFile').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f) return; e.target.value=''; toast('기획서를 읽는 중…');
   try{ const r=await importPptx(f); toast(`${r.issue}호 기획서를 불러왔어요 · 사연 ${r.q}개, 답변 ${r.a}개`+(r.qrChanged?' · QR 이미지도 기획서 것으로 교체했어요':'')); }
+  catch(err){ console.error(err); toast('불러오지 못했어요: '+(err.message||err)); }
+});
+
+/* ---------- 작업파일(json) 불러오기 ---------- */
+async function importWork(file){
+  let w; try{ w=JSON.parse(await file.text()); }catch(e){ throw new Error('json 파일을 읽을 수 없어요'); }
+  if(!w||!Array.isArray(w.boxes)||!w.boxes.length) throw new Error('작업파일 형식이 아니에요');
+  const keepAv=state.customAv||{};
+  state={id:newId(),issue:w.issue,boxes:w.boxes,customAv:{...keepAv,...(w.customAv||{})},qr:w.qr||null,qrName:w.qrName||null,footer:w.footer||null,src:w.src||null,srcName:w.srcName||null,exportedAt:w.exportedAt||null};
+  for(const [k,v] of Object.entries(state.customAv)) if(!IMG['custom_'+k]) IMG['custom_'+k]=await loadImg(v);
+  if(state.qr) IMG.qr=await loadImg(state.qr); else delete IMG.qr;
+  migrateFooter(); buildFoot(); changed(true);
+  return {issue:state.issue,q:state.boxes.filter(b=>b.type==='q').length,a:state.boxes.filter(b=>b.type==='a').length};
+}
+$('#jsonFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f) return; e.target.value=''; toast('작업파일을 읽는 중…');
+  try{ const r=await importWork(f); toast(`${r.issue}호 작업파일을 불러왔어요 · 사연 ${r.q}개, 답변 ${r.a}개`); }
   catch(err){ console.error(err); toast('불러오지 못했어요: '+(err.message||err)); }
 });
 

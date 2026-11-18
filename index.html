@@ -203,6 +203,7 @@
   .status{font-size:12px;color:var(--muted)}
   @media (max-width:900px){main{grid-template-columns:1fr;height:auto}.form{border-right:none}}
 @supports not (text-box:trim-both cap alphabetic){.gnum{line-height:1;padding-bottom:2px}}
+  .rte.ntbox div+div{margin-top:12px}
 </style>
 </head>
 <body>
@@ -10549,10 +10550,10 @@ function buildFoot(){
     const tl=document.createElement('label'); tl.className='f'; tl.style.marginTop='0'; tl.textContent='제목'; card.appendChild(tl); inp(card,l,'ftag');
     const cl=document.createElement('label'); cl.className='f'; cl.style.marginTop='10px'; cl.innerHTML='내용 <small style="font-weight:500">Ctrl+B로 굵게</small>'; card.appendChild(cl); rte(card,c,null); });
   const g2=group(''); inp(g2,'tipT',null,'팁 제목'); rte(g2,'tip','팁 내용',true);
-  const g3=group(''); { const l=document.createElement('label'); l.className='f'; l.style.cssText='display:flex;align-items:center'; l.innerHTML='유의사항<span class="avtip" tabindex="0" aria-label="유의사항 안내">i<span class="tb">Enter로 줄을 나누면 새 문단 앞에 ※ 표시가 생김</span></span>'; g3.appendChild(l); } rte(g3,'n',null,true);
+  const g3=group(''); { const l=document.createElement('label'); l.className='f'; l.style.cssText='display:flex;align-items:center'; l.innerHTML='유의사항<span class="avtip" tabindex="0" aria-label="유의사항 안내">i<span class="tb">Enter로 줄을 나누면 새 문단 앞에 ※ 표시가 생김</span></span>'; g3.appendChild(l); } rte(g3,'n',null,true).classList.add('ntbox');
   updFootState();
 }
-function updFootState(){ const e=footerEdited(); const s=$('#footState'); s.textContent=e?'수정됨':''; s.className='fstate'+(e?' on':''); }
+function updFootState(){ const e=footerEdited(); const s=$('#footState'); s.textContent=''; s.className='fstate'+(e?' on':''); }
 function pasteHandler(e){
   e.preventDefault(); const html=e.clipboardData.getData('text/html'); let lines;
   if(html) lines=htmlToLines(new DOMParser().parseFromString(html,'text/html').body,true);
@@ -11016,7 +11017,6 @@ function runChecks(){
     }
     if(bx.type==='q') avUsed[bx.avatar]=(avUsed[bx.avatar]||[]).concat({i,n:nums[i]});
   });
-  if(footerEdited()) add('info','하단 안내 문구가 기본 문구에서 수정됐어요','다음 호에도 수정된 문구가 이어져요.','#footSec');
   return res;
 }
 function fixText(i,k,fn,msg){

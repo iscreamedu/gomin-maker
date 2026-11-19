@@ -11004,7 +11004,7 @@ async function importWork(file){
 }
 $('#jsonFile').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f) return; e.target.value=''; toast('작업파일을 읽는 중…');
-  try{ const r=await importWork(f); toast(`${r.issue}호 작업파일을 불러왔어요 · 사연 ${r.q}개, 답변 ${r.a}개`); }
+  try{ const r=await importWork(f); toast(`${r.issue}호 작업파일을 불러왔어요 · 사연 ${r.q}개, 답변 ${r.a}개`); await render(); renderChecks(); $('#checksSec').open=true; }
   catch(err){ console.error(err); toast('불러오지 못했어요: '+(err.message||err)); }
 });
 
@@ -11097,7 +11097,8 @@ function renderChecks(){
   checked=true; $('#checksSec').classList.remove('nochk'); $('#chkTitle').textContent='점검 결과'; $('#btnCheck').lastChild.textContent='다시 점검하기'; $('#chkSum').style.opacity='1';
   const res=runChecks(), box=$('#checks'); const ne=res.filter(r=>r.lv==='err').length, nw=res.filter(r=>r.lv==='warn').length, ni=res.filter(r=>r.lv==='info').length;
   const ic={err:`<svg class="lucide lucide-x" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>`,warn:`<svg class="lucide lucide-exclamation-mark" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M12 15V4" /><path d="M12 20h.01" /></svg>`,ok:`<svg class="lucide lucide-check" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>`,info:`<svg class="lucide lucide-lightbulb" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></svg>`}, order={err:0,warn:1,info:2,ok:3};
-  $('#chkSum').innerHTML=`${ne?`<span class="pill err">오류 ${ne}</span>`:''}${nw?`<span class="pill warn">수정 필요 ${nw}</span>`:''}${ni?`<span class="pill info">안내 ${ni}</span>`:''}`;
+  const allOk=!ne&&!nw&&!ni; if(allOk) res.push({lv:'ok',msg:'이상 없음',detail:'오류와 수정할 곳이 없어요.'});
+  $('#chkSum').innerHTML=`${allOk?'<span class="pill ok">이상 없음</span>':''}${ne?`<span class="pill err">오류 ${ne}</span>`:''}${nw?`<span class="pill warn">수정 필요 ${nw}</span>`:''}${ni?`<span class="pill info">안내 ${ni}</span>`:''}`;
   box.innerHTML='';
   res.sort((a,b)=>order[a.lv]-order[b.lv]).forEach(r=>{
     const d=document.createElement('div'); d.className='chk '+r.lv;
